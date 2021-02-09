@@ -103,7 +103,7 @@ class FPIData():
 		
 		self.dtimes = np.array([])
 		for i in range(len(self.times)):
-			dtime = pydatadarn.utils.tools.time_to_dtime(self.times[i])
+			dtime = pydatadarn.tools.time_to_dtime(self.times[i])
 			self.dtimes = np.append(self.dtimes, dtime)
 		return
 	
@@ -120,11 +120,11 @@ class FPIData():
 		dtime_max (optional): dtime object
 			maximum time to get data for
 		"""
-		
+
 		#get indexes of east, south and west look
-		E_index = np.where(self.azm == -90)
+		E_index = np.where(self.azm == 90)
 		S_index = np.where(self.azm == 180)
-		W_index = np.where(self.azm == 90)
+		W_index = np.where(self.azm == -90)
 		
 		#get indexes of 0 azimuth (could be north or zenith look)
 		zero_index = np.where(self.azm == 0)
@@ -169,42 +169,80 @@ class FPIData():
 				E = E[np.where(E_dtimes >= dtime_min)]
 				S = S[np.where(S_dtimes >= dtime_min)]
 				W = W[np.where(W_dtimes >= dtime_min)]
-				zen = zen[np.where(zen_dtimes >= dtime_min)]
+				#for calculating horizontal velocites we need an extra zenith
+				#measurement before the minimu time
+				zen_indexes = np.where(zen_dtimes >= dtime_min)[0]
+				zen_indexes = np.insert(zen_indexes, 0, min(zen_indexes)-1)
+				zen = zen[zen_indexes]
 				
 				dN = dN[np.where(N_dtimes >= dtime_min)]
 				dE = dE[np.where(E_dtimes >= dtime_min)]
 				dS = dS[np.where(S_dtimes >= dtime_min)]
 				dW = dW[np.where(W_dtimes >= dtime_min)]
-				dzen = dzen[np.where(zen_dtimes >= dtime_min)]
+				dzen = dzen[zen_indexes]
 				
 				N_times = N_times[np.where(N_dtimes >= dtime_min)]
 				E_times = E_times[np.where(E_dtimes >= dtime_min)]
 				S_times = S_times[np.where(S_dtimes >= dtime_min)]
 				W_times = W_times[np.where(W_dtimes >= dtime_min)]
-				zen_times = zen_times[np.where(zen_dtimes >= dtime_min)]
+				zen_times = zen_times[zen_indexes]
+				
+				N_dtimes = N_dtimes[np.where(N_dtimes >= dtime_min)]
+				E_dtimes = E_dtimes[np.where(E_dtimes >= dtime_min)]
+				S_dtimes = S_dtimes[np.where(S_dtimes >= dtime_min)]
+				W_dtimes = W_dtimes[np.where(W_dtimes >= dtime_min)]
+				zen_dtimes = zen_dtimes[zen_indexes]
 				
 			if dtime_max !=0:
 				
-				N = N[np.where(N_dtimes <= dtime_max)]
-				E = E[np.where(E_dtimes <= dtime_max)]
-				S = S[np.where(S_dtimes <= dtime_max)]
-				W = W[np.where(W_dtimes <= dtime_max)]
-				zen = zen[np.where(zen_dtimes <= dtime_max)]				
+				N = N[np.where(N_dtimes < dtime_max)]
+				E = E[np.where(E_dtimes < dtime_max)]
+				S = S[np.where(S_dtimes < dtime_max)]
+				W = W[np.where(W_dtimes < dtime_max)]
+				zen = zen[np.where(zen_dtimes < dtime_max)]				
 				
-				dN = dN[np.where(N_dtimes <= dtime_max)]
-				dE = dE[np.where(E_dtimes <= dtime_max)]
-				dS = dS[np.where(S_dtimes <= dtime_max)]
-				dW = dW[np.where(W_dtimes <= dtime_max)]
-				dzen = dzen[np.where(zen_dtimes <= dtime_max)]				
+				dN = dN[np.where(N_dtimes < dtime_max)]
+				dE = dE[np.where(E_dtimes < dtime_max)]
+				dS = dS[np.where(S_dtimes < dtime_max)]
+				dW = dW[np.where(W_dtimes < dtime_max)]
+				dzen = dzen[np.where(zen_dtimes < dtime_max)]				
 				
-				N_times = N_times[np.where(N_dtimes <= dtime_max)]
-				E_times = E_times[np.where(E_dtimes <= dtime_max)]
-				S_times = S_times[np.where(S_dtimes <= dtime_max)]
-				W_times = W_times[np.where(W_dtimes <= dtime_max)]
-				zen_times = zen_times[np.where(zen_dtimes <= dtime_max)]
+				N_times = N_times[np.where(N_dtimes < dtime_max)]
+				E_times = E_times[np.where(E_dtimes < dtime_max)]
+				S_times = S_times[np.where(S_dtimes < dtime_max)]
+				W_times = W_times[np.where(W_dtimes < dtime_max)]
+				zen_times = zen_times[np.where(zen_dtimes < dtime_max)]
+				
 		
 			return [N, E, S, W, zen, dN, dE, dS, dW, dzen, N_times, E_times, 
 					   S_times, W_times, zen_times]
 		
 		else:
 			return [N, E, S, W, dN, dE, dS, dW, dzen]
+		
+#Function to calculate horizontal velocites from line of sight and vertical
+#velocities
+def hor_vel_calc(losv, losv_time_indexes, vy, vy_time_indexes, vel_err):
+	
+	if len(losv)+1 != len(vy):
+		raise Exception("vertical velocity length must be 1 greater than line of sight velocity")
+	
+	vx = np.empty(len(losv))
+	
+	#since times do not match, we interpolate the vertical velocity between
+	#points either side of the line of sight point
+	for i in range(len(losv)):
+		#losv should be such that losv[i] lies between vy[i] and vy[i+1] in time
+		#get vy velocity points where losv lies between
+		#find gradient
+		m = (vy[i+1]-vy[i])/(vy_time_indexes[i+1]-vy_time_indexes[i])
+		#find c (intersect)
+		c = vy[i]-(m*vy_time_indexes[i])
+		#now we have the y=mx+c between the two vy points we can interpolate the
+		#vertical velocity at the same time as the line of sight velocity
+		vy_i = (m*losv_time_indexes[i]) + c
+		print("{} {} = ({} * {}) + {}".format(i, vy_i, m, losv_time_indexes[i], c))
+	
+		vx[i] = (losv[i] - (vy_i*np.sin(np.deg2rad(45)))) / np.cos(np.deg2rad(45))
+
+	return vx, vel_err

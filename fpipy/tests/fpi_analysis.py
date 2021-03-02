@@ -6,20 +6,19 @@ Created on Tue Jan 26 16:42:24 2021
 @author: elliott
 """
 
-import fpi_data
 import pydatadarn
 import math
 import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
-import fpi_data as fpd
+import fpipy
 
 fpi_path = "/home/elliott/Documents/madrigalWeb-3.2/madrigalWeb/Data/"
 fname1 = fpi_path+"minime05_uao_20131001.cedar.010.hdf5"
 fname2 = fpi_path+"minime05_uao_20131002.cedar.008.hdf5"
 
-FPI = fpd.FPIData(fname1)
+FPI = fpipy.FPIData(fname1)
 
 FPI.add_HDF5(fname2)
 FPI.get_table()
@@ -68,10 +67,10 @@ for i in range(len(W)):
 for i in range(len(zen)):
 	zen_time_indexes[i] = (zen_dtimes[i]-dtime_min).total_seconds()
 
-N = fpd.hor_vel_calc(N, N_time_indexes, zen, zen_time_indexes)
-E = fpd.hor_vel_calc(E, E_time_indexes, zen, zen_time_indexes)
-S = fpd.hor_vel_calc(S, S_time_indexes, zen, zen_time_indexes)
-W = fpd.hor_vel_calc(W, W_time_indexes, zen, zen_time_indexes)
+N = fpipy.hor_vel_calc(N, N_time_indexes, zen, zen_time_indexes)
+E = fpipy.hor_vel_calc(E, E_time_indexes, zen, zen_time_indexes)
+S = fpipy.hor_vel_calc(S, S_time_indexes, zen, zen_time_indexes)
+W = fpipy.hor_vel_calc(W, W_time_indexes, zen, zen_time_indexes)
 
 tick_labels = np.array([])
 

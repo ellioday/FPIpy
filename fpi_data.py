@@ -220,29 +220,84 @@ class FPIData():
 		else:
 			return [N, E, S, W, dN, dE, dS, dW, dzen]
 		
-#Function to calculate horizontal velocites from line of sight and vertical
-#velocities
-def hor_vel_calc(losv, losv_time_indexes, vy, vy_time_indexes, vel_err):
+def interpolate(y, x, time):
+
+	"""
+	Function to interpolate values between two points on a line
 	
-	if len(losv)+1 != len(vy):
+	Parameters
+	----------
+	
+	y: float array
+		y values to interpolate (entire velocity array not just two points)
+		
+	x: int array
+		time in seconds from first line of sight doppler measurement
+		(entire velocity array not just two points)
+		
+	time: int
+		time to get interpolated velocity at in seconds
+	"""	
+
+	#find where time is closest to requested time
+	index0 = np.where(abs(x - time) == min(abs(x-time)))[0]
+	
+	#find if closest point is before or after requested time, then get the second index
+	if index0 == 0:
+		index1 = 1
+	elif index0 == len(x)-1:
+		index1 = len(x)-2
+	elif x[index0] < time:
+		index1 = index0 + 1
+	else:
+		index1 = index0 - 1
+
+	#get x1, x2, y1 and y2 (where 1 is the 1st point in time)
+	x1 = x[index0]
+	x2 = x[index1]
+	y1 = y[index0]
+	y2 = y[index1]
+	
+	#calculate y=mx+c line
+	m = (y2-y1)/(x2-x1)
+	c = y1 - (m*x1)
+	
+	#get velociy from requested time
+	vel = (m*time) + c
+
+	return vel
+		
+def hor_vel_calc(losv, losv_time_indexes, zen_v, zen_time_indexes):
+	
+	"""
+	Calculates the horizontal velocity from the line of sight and vertical
+	(zenith) velocities
+	
+	Parameters
+	----------
+	
+	losv: float array
+		raw line of sight doppler measurements
+		
+	losv_time_indexes: int array
+		time in seconds from first line of sight doppler measurement
+		
+	vy: float array
+		raw vertical (zenith) velocity measurement
+		
+	vy_time_indexes: int array
+		time in seconds from first line of sight doppler measurements
+	"""
+	
+	if len(losv)+1 != len(zen_v):
 		raise Exception("vertical velocity length must be 1 greater than line of sight velocity")
 	
 	vx = np.empty(len(losv))
 	
-	#since times do not match, we interpolate the vertical velocity between
-	#points either side of the line of sight point
 	for i in range(len(losv)):
-		#losv should be such that losv[i] lies between vy[i] and vy[i+1] in time
-		#get vy velocity points where losv lies between
-		#find gradient
-		m = (vy[i+1]-vy[i])/(vy_time_indexes[i+1]-vy_time_indexes[i])
-		#find c (intersect)
-		c = vy[i]-(m*vy_time_indexes[i])
-		#now we have the y=mx+c between the two vy points we can interpolate the
-		#vertical velocity at the same time as the line of sight velocity
-		vy_i = (m*losv_time_indexes[i]) + c
-		print("{} {} = ({} * {}) + {}".format(i, vy_i, m, losv_time_indexes[i], c))
-	
-		vx[i] = (losv[i] - (vy_i*np.sin(np.deg2rad(45)))) / np.cos(np.deg2rad(45))
+		#get vertical velocity at the same time as line of sight measurement
+		vy = interpolate(zen_v, zen_time_indexes, losv_time_indexes[i])
+		#calculate horizontal velocity
+		vx[i] = (losv[i] - (vy*np.sin(np.deg2rad(45)))) / np.cos(np.deg2rad(45))
 
-	return vx, vel_err
+	return vx

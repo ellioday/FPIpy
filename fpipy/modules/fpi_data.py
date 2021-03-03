@@ -9,6 +9,7 @@ Created on Mon Jan 25 08:38:12 2021
 import numpy as np
 import h5py
 import pydatadarn
+import math
 
 self_path = "/home/elliott/Documents/madrigalWeb-3.2/madrigalWeb/Data/"
 fname = self_path+"minime05_uao_20131002.cedar.008.hdf5"
@@ -301,3 +302,24 @@ def hor_vel_calc(losv, losv_time_indexes, zen_v, zen_time_indexes):
 		vx[i] = (losv[i] - (vy*np.sin(np.deg2rad(45)))) / np.cos(np.deg2rad(45))
 
 	return vx
+
+def merge_vecs(NS, EW):
+	
+	"""
+	Calculates the full 2D vector direction and magnitude from North->South and
+	East-> West flows
+	
+	Parameters
+	----------
+	
+	NS: float
+		velocity of North->South neutral wind flow
+		
+	EW: float
+		velocity of East->West neutral wind flow
+	"""
+	
+	azimuth = -90 + np.rad2deg(np.arctan(NS/EW)) # 90 = E, -90 = W, 0 = N, 180 = S
+	velocity = math.sqrt(pow(EW, 2) + pow(NS, 2))
+	
+	return velocity, azimuth

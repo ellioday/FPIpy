@@ -8,9 +8,12 @@ Created on Tue Mar  2 16:12:54 2021
 
 import numpy as np
 from pydatadarn.utils import coordinate_transformations as coords
+from pydatadarn.utils import tools as tools
 
-uao_coords = [40.133, 278.1, 0.2] #[glat, glon, alt(km)]
-ann_coords = [42.27, 276.25, 0.3] #[glat, glon, alt(km)]
+
+
+uao_coords = [40.133, tools.lon360_to_180(278.1), 0.2] #[glat, glon, alt(km)]
+ann_coords = [42.27, tools.lon360_to_180(276.25), 0.3] #[glat, glon, alt(km)]
 
 class FPIStation():
 	

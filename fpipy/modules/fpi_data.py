@@ -307,7 +307,7 @@ def merge_vecs(NS, EW):
 	
 	"""
 	Calculates the full 2D vector direction and magnitude from North->South and
-	East-> West flows
+	East->West flows
 	
 	Parameters
 	----------
@@ -319,7 +319,16 @@ def merge_vecs(NS, EW):
 		velocity of East->West neutral wind flow
 	"""
 	
-	azimuth = -90 + np.rad2deg(np.arctan(NS/EW)) # 90 = E, -90 = W, 0 = N, 180 = S
+	theta = np.rad2deg(np.arctan(NS/EW)) # 90 = E, -90 = W, 0 = N, 180 = S
+	print("theta", theta)
+	if EW >= 0:
+		kvec = 90-theta
+	elif EW < 0:
+		kvec = -90-theta
+	else:
+		print("EW must be a number")
+		return
+	
 	velocity = math.sqrt(pow(EW, 2) + pow(NS, 2))
 	
-	return velocity, azimuth
+	return velocity, kvec

@@ -83,6 +83,27 @@ def hor_vel_calc(losv, losv_time_indexes, zen_v, zen_time_indexes):
 
 	return vx
 
+def times_to_secs(dtimes, dtime_min):
+	
+	"""
+	Converts array of times into an array of seconds from a start time
+	
+	Parameters
+	----------
+	
+	dtimes: array of dtime objects
+		array of times to convert (YYYY/MM/DD hh:mm:ss)
+		
+	dtime_min: dtime object
+		start time to compare time computed from
+	"""
+	
+	time_indexes = np.empty(len(dtimes), dtype="int")
+	for i in range(len(time_indexes)):
+		time_indexes[i] = (dtimes[i]-dtime_min).total_seconds()
+		
+	return time_indexes
+
 def merge_vecs(NS, EW):
 	
 	"""

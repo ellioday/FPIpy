@@ -1,5 +1,7 @@
 import numpy as np
 import math
+import aacgmv2
+import pydatadarn
 
 def interpolate(y, x, time):
 
@@ -133,3 +135,55 @@ def merge_vecs(NS, EW):
 	velocity = math.sqrt(pow(EW, 2) + pow(NS, 2))
 	
 	return velocity, kvec
+
+def vector_shift(dtime, alt=0, method="M2G"):
+	
+	"""
+	Returns the latitude and longitude shift to convert geographic vectors to
+	magnetic
+	
+	Parameters
+	----------
+	
+	lats: float array
+		latitudes to shift (in degrees)
+		
+	lons: float array
+		longitude to shift (in degrees [-180 -> 180])
+	
+	dtime: dtime object
+		time to calculate shift for
+		
+	alt: float
+		altitude above sea level (default = 0)
+		
+	method: string
+		code to convert vectors from/to (M2G = aacgm to geo, G2M = geo to aacgm)
+	"""
+	
+	if method == "M2G":
+	
+		#get coordinates of geographic pole in aacgm
+		glat, glon, r = aacgmv2.wrapper.convert_latlon(90, 0, alt, dtime, "G2A")
+		
+		#convert glon from -180 -> 180 into 0 -> 360
+		glon = pydatadarn.tools.lon180_to_360(glon)
+		#find angle between geographic and magnetic north
+		dr = glat - 90
+		dtheta = glon
+		
+	elif method == "G2M":
+		
+		#get coordinates of magnetic pole in geographic
+		mlat, mlon, r = aacgmv2.wrapper.convert_latlon(90, 0, alt, dtime, "A2G")
+		#convert glon from -180 -> 180 into 0 -> 360
+		glon = pydatadarn.tools.lon180_to_360(glon)
+		#find angle between magnetic and geographic north
+		dr = mlat - 90
+		dtheta = mlon
+	
+	else:
+		print("method code unrecognised, please try again")
+		return
+	
+	return dr, dtheta

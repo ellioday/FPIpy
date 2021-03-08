@@ -221,6 +221,20 @@ class FPIData():
 		else:
 			return [N, E, S, W, dN, dE, dS, dW, dzen]
 		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 def interpolate(y, x, time):
 
 	"""

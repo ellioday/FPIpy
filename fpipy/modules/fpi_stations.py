@@ -12,7 +12,7 @@ from pydatadarn.utils import tools as tools
 
 
 
-uao_coords = [40.133, tools.lon360_to_180(278.1), 0.2] #[glat, glon, alt(km)]
+uao_coords = [40.133, tools.lon360_to_180(271.8), 0.2] #[glat, glon, alt(km)]
 ann_coords = [42.27, tools.lon360_to_180(276.25), 0.3] #[glat, glon, alt(km)]
 
 class FPIStation():
@@ -53,7 +53,7 @@ class FPIStation():
 		return
 
 		
-	def get_aacgm(self, dtime):			
+	def get_coords(self, dtime, aacgm=True):			
 	
 		"""
 		Calculates and returns aacmgv2 coordinates for this radar from the
@@ -64,13 +64,22 @@ class FPIStation():
 		
 		time: datetime object
 			datetime object of format datetime.datetime(YYYY, MM, DD, hh, mm, ss)
+			
+		aacgm (optional): bool
+			if true will return coords in aacgm coordinates, if false in geographic
 		"""
 
-		#get mlat and mlon
-		mlat, mlon = coords.geo_to_aacgm(self.glat, self.glon, dtime, self.alt)
-		if isinstance(mlat, np.ndarray):
-			mlat = mlat[0]
-		if isinstance(mlon, np.ndarray):
-			mlon = mlon[0]
+		if aacgm == True:
+
+			#get mlat and mlon
+			mlat, mlon = coords.geo_to_aacgm(self.glat, self.glon, dtime, self.alt)
+			if isinstance(mlat, np.ndarray):
+				mlat = mlat[0]
+			if isinstance(mlon, np.ndarray):
+				mlon = mlon[0]
 		
-		return mlat, mlon
+			return mlat, mlon
+		
+		elif aacgm == False:
+			
+			return self.glat, self.glon

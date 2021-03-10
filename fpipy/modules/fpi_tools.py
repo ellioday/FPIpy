@@ -25,8 +25,12 @@ def interpolate(y, x, time):
 	#find where time is closest to requested time
 	index0 = np.where(abs(x - time) == min(abs(x-time)))[0]
 	
+	#if two points are equally close they both must be our indices
+	if len(index0) == 2:
+		index1 = index0[1]
+		index0 = index0[0]
 	#find if closest point is before or after requested time, then get the second index
-	if index0 == 0:
+	elif index0 == 0:
 		index1 = 1
 	elif index0 == len(x)-1:
 		index1 = len(x)-2

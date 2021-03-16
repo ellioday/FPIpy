@@ -7,13 +7,12 @@ Created on Tue Mar  2 16:12:54 2021
 """
 
 import numpy as np
-from pydatadarn.utils import coordinate_transformations as coords
-from pydatadarn.utils import tools as tools
+import elliotools
 
 
 
-uao_coords = [40.133, tools.lon360_to_180(271.8), 0.2] #[glat, glon, alt(km)]
-ann_coords = [42.27, tools.lon360_to_180(276.25), 0.3] #[glat, glon, alt(km)]
+uao_coords = [40.133, elliotools.lon360_to_180(271.8), 0.2] #[glat, glon, alt(km)]
+ann_coords = [42.27, elliotools.lon360_to_180(276.25), 0.3] #[glat, glon, alt(km)]
 
 class FPIStation():
 	
@@ -72,7 +71,7 @@ class FPIStation():
 		if aacgm == True:
 
 			#get mlat and mlon
-			mlat, mlon = coords.geo_to_aacgm(self.glat, self.glon, dtime, self.alt)
+			mlat, mlon = elliotools.geo_to_aacgm(self.glat, self.glon, dtime, self.alt)
 			if isinstance(mlat, np.ndarray):
 				mlat = mlat[0]
 			if isinstance(mlon, np.ndarray):

@@ -10,6 +10,7 @@ import numpy as np
 import h5py
 import pydatadarn
 import math
+import elliotools
 
 self_path = "/home/elliott/Documents/madrigalWeb-3.2/madrigalWeb/Data/"
 fname = self_path+"minime05_uao_20131002.cedar.008.hdf5"
@@ -104,7 +105,7 @@ class FPIData():
 		
 		self.dtimes = np.array([])
 		for i in range(len(self.times)):
-			dtime = pydatadarn.tools.time_to_dtime(self.times[i])
+			dtime = elliotools.time_to_dtime(self.times[i])
 			self.dtimes = np.append(self.dtimes, dtime)
 		return
 	

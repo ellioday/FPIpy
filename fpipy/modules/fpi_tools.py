@@ -76,8 +76,8 @@ def hor_vel_calc(losv, losv_time_indexes, zen_v, zen_time_indexes):
 		time in seconds from first line of sight doppler measurements
 	"""
 	
-	if len(losv)+1 != len(zen_v):
-		raise Exception("vertical velocity length must be 1 greater than line of sight velocity")
+	if len(losv) >= len(zen_v):
+		raise Exception("vertical velocity length must be greater than line of sight velocity")
 	
 	vx = np.empty(len(losv))
 	

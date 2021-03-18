@@ -52,7 +52,7 @@ class FPIStation():
 		return
 
 		
-	def get_coords(self, dtime, aacgm=True):			
+	def get_coords(self, dtime, alt=0, aacgm=True):			
 	
 		"""
 		Calculates and returns aacmgv2 coordinates for this radar from the
@@ -64,6 +64,9 @@ class FPIStation():
 		time: datetime object
 			datetime object of format datetime.datetime(YYYY, MM, DD, hh, mm, ss)
 			
+		alt: float
+			altitude in km
+			
 		aacgm (optional): bool
 			if true will return coords in aacgm coordinates, if false in geographic
 		"""
@@ -71,7 +74,7 @@ class FPIStation():
 		if aacgm == True:
 
 			#get mlat and mlon
-			mlat, mlon = elliotools.geo_to_aacgm(self.glat, self.glon, dtime, self.alt)
+			mlat, mlon = elliotools.geo_to_aacgm(self.glat, self.glon, dtime, self.alt+alt)
 			if isinstance(mlat, np.ndarray):
 				mlat = mlat[0]
 			if isinstance(mlon, np.ndarray):

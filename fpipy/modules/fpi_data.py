@@ -335,7 +335,7 @@ class FPIData():
 		start_dtime = dt.datetime(year, month, day, 0, 0, 0)
 		
 		#remove los values that are outside of zenith time range
-		ix = np.where(los_dtimes >= min(zen_dtimes) & (los_dtimes <= max(zen_dtimes)))
+		ix = np.where((los_dtimes >= min(zen_dtimes)) & (los_dtimes <= max(zen_dtimes)))
 		los_v = los_v[ix]
 		los_dtimes = los_dtimes[ix]
 		

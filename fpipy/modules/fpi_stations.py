@@ -11,12 +11,12 @@ import elliotools
 
 
 
-uao_coords = [40.133, elliotools.lon360_to_180(271.8), 0.2] #[glat, glon, alt(km)]
+uao_coords = [40.133, elliotools.lon360_to_180(271.8), 0.2, 5548] #[glat, glon, alt(km)]
 ann_coords = [42.27, elliotools.lon360_to_180(276.25), 0.3, 5551] #[glat, glon, alt(km)]
 mh_coords = [42.61, elliotools.lon360_to_180(288.52), 0]
-eku_coords = [37.75, elliotools.lon360_to_180(275.71), 0.3]
-vti_coords = [37.206, elliotools.lon360_to_180(279.58), 0.3]
-par_coords = [35.2, elliotools.lon360_to_180(277.15), 0.9]
+eku_coords = [37.75, elliotools.lon360_to_180(275.71), 0.3, 5554]
+vti_coords = [37.206, elliotools.lon360_to_180(279.58), 0.3, 5550]
+par_coords = [35.2, elliotools.lon360_to_180(277.15), 0.9, 5547]
 
 class FPIStation():
 	
@@ -45,6 +45,7 @@ class FPIStation():
 			self.glat = uao_coords[0]
 			self.glon = uao_coords[1]
 			self.alt = uao_coords[2]
+			self.id = uao_coords[3]
 			
 		elif (FPI_name == "ann") or (FPI_name == "ANN"):
 			self.glat = ann_coords[0]
@@ -61,16 +62,19 @@ class FPIStation():
 			self.glat = eku_coords[0]
 			self.glon = eku_coords[1]
 			self.alt = eku_coords[2]
+			self.id = eku_coords[3]
 			
 		elif (FPI_name == "vti") or (FPI_name == "VTI"):
 			self.glat = vti_coords[0]
 			self.glon = vti_coords[1]
 			self.alt = vti_coords[2]
+			self.id = vti_coords[3]
 			
 		elif (FPI_name == "par") or (FPI_name == "PAR"):
 			self.glat = par_coords[0]
 			self.glon = par_coords[1]
 			self.alt = par_coords[2]
+			self.id = par_coords[3]
 			
 		else:
 			

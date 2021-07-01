@@ -191,9 +191,10 @@ class FPIData():
 		for i in range(len(self.times)):
 			dtime = elliotools.time_to_dtime(self.times[i])
 			self.dtimes = np.append(self.dtimes, dtime)
+			
 		return
 	
-	def get_azm_vels(self, dtime_min = 0, dtime_max = 0):
+	def get_azm_vels(self, dtime_min=0, dtime_max=0):
 		
 		"""
 		Returns the North, East, South, West and Zenith line of sight velocities
@@ -207,13 +208,13 @@ class FPIData():
 			maximum time to get data for
 		"""
 
-		#get indexes of east, south and west look
-		E_index = np.where(self.azm == 90)
-		S_index = np.where(self.azm == 180)
-		W_index = np.where(self.azm == -90)
+		#get indexes of east, south and west look +/- 5deg
+		E_index = np.where((self.azm >= 85) & (self.azm <= 95))
+		S_index = np.where((abs(self.azm) >= 175) & (abs(self.azm) <= 185))
+		W_index = np.where((self.azm >= -95) & (self.azm <= -85))
 		
 		#get indexes of 0 azimuth (could be north or zenith look)
-		zero_index = np.where(self.azm == 0)
+		zero_index = np.where((self.azm >= -5) & (self.azm <= 5))
 		#get indexes of north or zenith look
 		N_elm_index = np.where(self.elm == 45)
 		#zenith indexes are where elevation angles are at 90deg
@@ -235,19 +236,19 @@ class FPIData():
 		dW = self.dlos_v[W_index]
 		dzen = self.dlos_v[zen_index]
 		
+		N_times = self.times[N_index]
+		E_times = self.times[E_index]
+		S_times = self.times[S_index]
+		W_times = self.times[W_index]
+		zen_times = self.times[zen_index]
+	
+		N_dtimes = self.dtimes[N_index]
+		E_dtimes = self.dtimes[E_index]
+		S_dtimes = self.dtimes[S_index]
+		W_dtimes = self.dtimes[W_index]
+		zen_dtimes = self.dtimes[zen_index]
+		
 		if dtime_min !=0 or dtime_max !=0:
-		
-			N_times = self.times[N_index]
-			E_times = self.times[E_index]
-			S_times = self.times[S_index]
-			W_times = self.times[W_index]
-			zen_times = self.times[zen_index]
-		
-			N_dtimes = self.dtimes[N_index]
-			E_dtimes = self.dtimes[E_index]
-			S_dtimes = self.dtimes[S_index]
-			W_dtimes = self.dtimes[W_index]
-			zen_dtimes = self.dtimes[zen_index]
 			
 			if dtime_min !=0:
 				
@@ -300,11 +301,8 @@ class FPIData():
 				zen_times = zen_times[np.where(zen_dtimes < dtime_max)]
 				
 		
-			return [N, E, S, W, zen, dN, dE, dS, dW, dzen, N_times, E_times, 
+		return [N, E, S, W, zen, dN, dE, dS, dW, dzen, N_times, E_times, 
 					   S_times, W_times, zen_times]
-		
-		else:
-			return [N, E, S, W, dN, dE, dS, dW, dzen]
 		
 	def hor_vel_calc(self, los_v, los_dtimes, zen_v, zen_dtimes):
 		

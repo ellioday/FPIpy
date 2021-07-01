@@ -7,11 +7,14 @@ Created on Mon Jan 25 08:38:12 2021
 """
 
 import numpy as np
+import os
 import h5py
 import pydatadarn
 import math
 import elliotools
 import lunapath
+import fpipy
+import datetime as dt
 
 import madrigalWeb.madrigalWeb
 
@@ -53,7 +56,7 @@ def download_data(FPI, date, path):
 	save_name = "{}{}_{}{}{}.hdf5".format(path, FPI, year, month, day)
 	
 	#get FPI station id
-	FPI = FPIStation(FPI)
+	FPI = fpipy.FPIStation(FPI)
 	
 	#constants
 	user_fullname = "Elliott Day"
@@ -66,7 +69,7 @@ def download_data(FPI, date, path):
 								  year, month, day+1, 0, 0, 0)[0]
 	experiment_file = Data.getExperimentFiles(experiment.id)[0]
 	if experiment_file.category == 1:
-		Data.downloadFile(experiment_file.name, fname,  user_fullname, 
+		Data.downloadFile(experiment_file.name, save_name,  user_fullname, 
 					user_email, user_affiliation, "hdf5")
 		return True
 	else:
@@ -74,8 +77,35 @@ def download_data(FPI, date, path):
 
 class FPIData():
 
-	def __init__(self, fname):
+	def __init__(self, FPI, date):
 		
+		"""
+		Collects data from the given FPI and date
+		
+		Parameters
+		----------
+		
+		FPI: str
+			3-letter abbreviation for FPI
+			
+		date: str
+			date to obtain data for (YYYY/MM/DD)
+		"""
+		
+		self.date = date
+		#check if data has already been downloaded
+		luna_path = lunapath.base_path
+		data_path = luna_path+"users/daye1/Madrigal/Data/"
+		year = int(date[0:4])
+		month = int(date[5:7])
+		day = int(date[8:10])
+		fname = "{}{}_{}{}{}.hdf5".format(data_path, FPI, year, month, day)
+		file_list = os.listdir(data_path)
+		#if data has not been downloaded then do it now
+		if fname not in file_list:
+			download_data(FPI, date, data_path)
+		
+		#load the data
 		self.Table_Layout, self.Data_Params, self.Experiment_Notes, self.Experiment_Params, self.records = self.load_HDF5(fname)
 		
 		return
@@ -275,3 +305,51 @@ class FPIData():
 		
 		else:
 			return [N, E, S, W, dN, dE, dS, dW, dzen]
+		
+	def hor_vel_calc(self, los_v, los_dtimes, zen_v, zen_dtimes):
+		
+		"""
+		Calculates and returns the horizontal component of the line of sight
+		velocity
+		
+		Parameters
+		----------
+		
+		los_v: float array
+			array of line of sight velocities
+			
+		los_dtimes: dtime array
+			array of dtimes of line of sight measurements
+			
+		zen_v: float array
+			array of zenith velocities
+			
+		zen_dtimes: dtime array
+			array of dtimes of zenith measurements
+		"""
+		
+		#convert dtimes to seconds from start time
+		year = int(self.date[0:4])
+		month = int(self.date[5:7])
+		day = int(self.date[8:10])	
+		start_dtime = dt.datetime(year, month, day, 0, 0, 0)
+		
+		#remove los values that are outside of zenith time range
+		ix = np.where(los_dtimes >= min(zen_dtimes) & (los_dtimes <= max(zen_dtimes)))
+		los_v = los_v[ix]
+		los_dtimes = los_dtimes[ix]
+		
+		los_time_indexes = np.empty(len(los_v), dtype="int")
+		zen_time_indexes = np.empty(len(zen_v), dtype="int")
+		for i in range(len(los_v)):
+			los_time_indexes[i] = (los_dtimes[i]-start_dtime).total_seconds()
+		for i in range(len(zen_v)):
+			zen_time_indexes[i] = (zen_dtimes[i]-start_dtime).total_seconds()
+			
+		#interpolate zenith at locations where we have los measurements
+		zen_v_interped = np.interp(los_time_indexes, zen_time_indexes, zen_v)
+		
+		#calculate horizontal velocity
+		hor_v = (los_v - (zen_v_interped*np.sin(np.deg2rad(45)))) / np.cos(np.deg2rad(45))
+		
+		return hor_v, los_dtimes

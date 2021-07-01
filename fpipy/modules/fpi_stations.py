@@ -12,7 +12,7 @@ import elliotools
 
 
 uao_coords = [40.133, elliotools.lon360_to_180(271.8), 0.2] #[glat, glon, alt(km)]
-ann_coords = [42.27, elliotools.lon360_to_180(276.25), 0.3] #[glat, glon, alt(km)]
+ann_coords = [42.27, elliotools.lon360_to_180(276.25), 0.3, 5551] #[glat, glon, alt(km)]
 mh_coords = [42.61, elliotools.lon360_to_180(288.52), 0]
 eku_coords = [37.75, elliotools.lon360_to_180(275.71), 0.3]
 vti_coords = [37.206, elliotools.lon360_to_180(279.58), 0.3]
@@ -50,6 +50,7 @@ class FPIStation():
 			self.glat = ann_coords[0]
 			self.glon = ann_coords[1]
 			self.alt = ann_coords[2]
+			self.id = ann_coords[3]
 			
 		elif (FPI_name == "mh") or (FPI_name == "MH"):
 			self.glat = mh_coords[0]

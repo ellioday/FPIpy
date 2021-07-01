@@ -11,9 +11,66 @@ import h5py
 import pydatadarn
 import math
 import elliotools
+import lunapath
+
+import madrigalWeb.madrigalWeb
 
 self_path = "/home/elliott/Documents/madrigalWeb-3.2/madrigalWeb/Data/"
 fname = self_path+"minime05_uao_20131002.cedar.008.hdf5"
+
+user_fullname = "Elliott Day"
+user_email = "e.day1@lancaster.ac.uk"
+user_affiliation = "Lancaster University"
+
+madrigalURL = "http://cedar.openmadrigal.org"
+
+def download_data(FPI, date, path):
+	
+	"""
+	Downloads data from the given FPI and date to path
+	
+	Parameters
+	----------
+	
+	FPI: str
+		3-letter abbreviation for FPI station
+		
+	date: str
+		day to obtain data for (YYYY/MM/DD)
+		
+	path: str
+		path to save data file to
+		
+	Returns
+	-------
+	
+	True (if data was downloaded) or False (if no data was available to download)
+	"""
+	
+	year = int(date[0:4])
+	month = int(date[5:7])
+	day = int(date[8:10])
+	save_name = "{}{}_{}{}{}.hdf5".format(path, FPI, year, month, day)
+	
+	#get FPI station id
+	FPI = FPIStation(FPI)
+	
+	#constants
+	user_fullname = "Elliott Day"
+	user_email = "e.day1@lancaster.ac.uk"
+	user_affiliation = "Lancaster University"
+	madrigalURL = "http://cedar.openmadrigal.org"
+	
+	Data = madrigalWeb.madrigalWeb.MadrigalData(madrigalURL)
+	experiment = Data.getExperiments(FPI.id, year, month, day, 0, 0, 0, 
+								  year, month, day+1, 0, 0, 0)[0]
+	experiment_file = Data.getExperimentFiles(experiment.id)[0]
+	if experiment_file.category == 1:
+		Data.downloadFile(experiment_file.name, fname,  user_fullname, 
+					user_email, user_affiliation, "hdf5")
+		return True
+	else:
+		return False
 
 class FPIData():
 
@@ -26,7 +83,7 @@ class FPIData():
 	def load_HDF5(self, fname):
 		
 		"""
-		Loads and saves hdf5 data for fabry-perot interferometers
+		Loads hdf5 data for fabry-perot interferometers
 		
 		Parameters
 		----------
@@ -38,17 +95,14 @@ class FPIData():
 		with h5py.File(fname, "r") as hdf:
 			
 			base_items = list(hdf.items())
-			#print("Items in the base directory:", base_items)
 			
 			Data = hdf.get("Data")
 			Data_items = list(Data.items())
-			#print("\nItems in Data:", Data_items)
 			Table_Layout = np.array(Data.get("Table Layout"))
 			
 			#Get Metadata
 			Metadata = hdf.get("Metadata")
 			Metadata_items = list(Metadata.items())
-			#print("\nItems in Metadata:", Metadata_items)
 			Data_Params = np.array(Metadata.get("Data Parameters"))
 			Experiment_Notes = np.array(Metadata.get("Experiment Notes"))
 			Experiment_Params = np.array(Metadata.get("Experiment Parameters"))
